@@ -10,7 +10,7 @@ namespace Dissonance.Integrations.PurrNet
     {
         [Header("Auto Start Settings")]
         [Tooltip("The flags to determine when the Dissonance Comms should automatically start.")]
-        [SerializeField] private StartFlags startFlags = StartFlags.ServerBuild | StartFlags.ClientBuild | StartFlags.Editor;
+        [SerializeField] private StartFlags startFlags = StartFlags.ServerBuild | StartFlags.ClientBuild | StartFlags.Clone | StartFlags.Editor;
         
         public DissonanceComms comms { get; private set; }
         
