@@ -1,0 +1,11 @@
+{
+    "name": "purrnet-dissonance",
+    "version": "1.0.0",
+    "description": "Dissonance integration with PurrNet",
+    "displayName": "PurrNet Dissonance",
+    "documentationUrl": "https://purrnet.gitbook.io/",
+    "hideInEditor": false,
+    "keywords": [
+        "purrnet"
+    ]
+}
