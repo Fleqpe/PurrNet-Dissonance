@@ -4,8 +4,8 @@ using Dissonance.Networking;
 using JetBrains.Annotations;
 using PurrNet;
 using PurrNet.Logging;
+using PurrNet.Pooling;
 using PurrNet.Transports;
-using UnityEngine;
 
 namespace Dissonance.Integrations.PurrNet
 {
@@ -21,19 +21,25 @@ namespace Dissonance.Integrations.PurrNet
         protected override void SendReliable(ArraySegment<byte> packet)
         {
             if(NetworkManager.main.sceneModule.TryGetSceneID(_network.gameObject.scene, out var scene))
-                PurrNetServer.ServerReceiveDataReliable(packet.ToArray(), scene);
+            {
+                var bytes = ByteArrayPool.Rent(packet.Count);
+                Buffer.BlockCopy(packet.Array, packet.Offset, bytes, 0, packet.Count);
+                PurrNetServer.ServerReceiveDataReliable(bytes, scene);
+            }
         }
- 
+
         protected override void SendUnreliable(ArraySegment<byte> packet)
         {
             if(NetworkManager.main.sceneModule.TryGetSceneID(_network.gameObject.scene, out var scene))
-                PurrNetServer.ServerReceiveDataUnreliable(packet.ToArray(), scene);
+            {
+                var bytes = ByteArrayPool.Rent(packet.Count);
+                Buffer.BlockCopy(packet.Array, packet.Offset, bytes, 0, packet.Count);
+                PurrNetServer.ServerReceiveDataUnreliable(bytes, scene);
+            }
         }
 
         public override void Connect()
         {
-            PurrLogger.Log($"Connecting");
-            
             base.Connected();
         }
 
@@ -52,18 +58,26 @@ namespace Dissonance.Integrations.PurrNet
 
         private static void ReceiveData(SceneID scene, byte[] data)
         {
-            if(!_receivedData.TryGetValue(scene, out var queue))
-                _receivedData[scene] = queue = new Queue<byte[]>();
+            if (!_receivedData.TryGetValue(scene, out var queue))
+            {
+                var newQueue = QueuePool<byte[]>.Instantiate();
+                _receivedData[scene] = queue = newQueue;
+            }
 
             queue.Enqueue(data);
         }
-
+        
         protected override void ReadMessages()
         {
-            if (NetworkManager.main.sceneModule.TryGetSceneID(_network.gameObject.scene, out var scene) && _receivedData.TryGetValue(scene, out var dataQueue))
+            if (NetworkManager.main.sceneModule.TryGetSceneID(_network.gameObject.scene, out var scene) && 
+                _receivedData.TryGetValue(scene, out var dataQueue))
             {
                 while (dataQueue.Count > 0)
-                    base.NetworkReceivedPacket(dataQueue.Dequeue());
+                {
+                    var data = dataQueue.Dequeue();
+                    base.NetworkReceivedPacket(data);
+                    ByteArrayPool.Return(data);
+                }
             }
         }
     }

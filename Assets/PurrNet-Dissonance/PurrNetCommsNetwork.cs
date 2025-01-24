@@ -69,7 +69,6 @@ namespace Dissonance.Integrations.PurrNet
 
         protected override void Initialize()
         {
-            PurrLogger.Log($"initializing");
             // Initialization for PurrNet-specific setups, if required
         }
     }
