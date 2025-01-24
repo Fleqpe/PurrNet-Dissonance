@@ -58,7 +58,7 @@ namespace Dissonance.Integrations.PurrNet
         protected override PurrNetServer CreateServer(object connectionParameters)
         {
             server = new PurrNetServer(this);
-            return Server;
+            return server;
         }
 
         protected override PurrNetClient CreateClient(object connectionParameters)
