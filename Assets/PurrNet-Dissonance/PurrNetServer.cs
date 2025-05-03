@@ -19,24 +19,28 @@ namespace Dissonance.Integrations.PurrNet
 
         protected override void SendReliable(PlayerID connection, ArraySegment<byte> packet)
         {
-            if (NetworkManager.main.sceneModule.TryGetSceneID(_network.gameObject.scene, out var scene))
-            {
-                var bytes = ByteArrayPool.Rent(packet.Count);
-                Buffer.BlockCopy(packet.Array, packet.Offset, bytes, 0, packet.Count);
-                PurrNetClient.ClientReceiveDataReliable(connection, scene, bytes);
-            }
+            if (NetworkManager.main != null && NetworkManager.main.sceneModule != null)
+                if (NetworkManager.main.clientState == ConnectionState.Connected)
+                    if (NetworkManager.main.sceneModule.TryGetSceneID(_network.gameObject.scene, out var scene))
+                    {
+                        var bytes = ByteArrayPool.Rent(packet.Count);
+                        Buffer.BlockCopy(packet.Array, packet.Offset, bytes, 0, packet.Count);
+                        PurrNetClient.ClientReceiveDataReliable(connection, scene, bytes);
+                    }
         }
 
         protected override void SendUnreliable(PlayerID connection, ArraySegment<byte> packet)
         {
-            if (NetworkManager.main.sceneModule.TryGetSceneID(_network.gameObject.scene, out var scene))
-            {
-                var bytes = ByteArrayPool.Rent(packet.Count);
-                Buffer.BlockCopy(packet.Array, packet.Offset, bytes, 0, packet.Count);
-                PurrNetClient.ClientReceiveDataUnreliable(connection, scene, bytes);
-            }
+            if (NetworkManager.main != null && NetworkManager.main.sceneModule != null)
+                if (NetworkManager.main.clientState == ConnectionState.Connected)
+                    if (NetworkManager.main.sceneModule.TryGetSceneID(_network.gameObject.scene, out var scene))
+                    {
+                        var bytes = ByteArrayPool.Rent(packet.Count);
+                        Buffer.BlockCopy(packet.Array, packet.Offset, bytes, 0, packet.Count);
+                        PurrNetClient.ClientReceiveDataUnreliable(connection, scene, bytes);
+                    }
         }
-        
+
         private static Dictionary<SceneID, SceneQueue> _receivedData = new();
 
         [ServerRpc(requireOwnership: false, channel: Channel.ReliableOrdered)]
@@ -49,7 +53,7 @@ namespace Dissonance.Integrations.PurrNet
         {
             ReceiveData(info.sender, scene, data);
         }
-        
+
         private static void ReceiveData(PlayerID player, SceneID scene, byte[] data)
         {
             if (!_receivedData.TryGetValue(scene, out var sceneQueue))
@@ -70,7 +74,7 @@ namespace Dissonance.Integrations.PurrNet
 
         protected override void ReadMessages()
         {
-            if (NetworkManager.main.sceneModule.TryGetSceneID(_network.gameObject.scene, out var scene) && 
+            if (NetworkManager.main.sceneModule.TryGetSceneID(_network.gameObject.scene, out var scene) &&
                 _receivedData.TryGetValue(scene, out var dataQueue))
             {
                 foreach (var (player, queue) in dataQueue.data)
