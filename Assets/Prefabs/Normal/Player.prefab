@@ -27,7 +27,7 @@ Transform:
   m_GameObject: {fileID: 3038797334321894207}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -4.7779226, y: 6.5704885, z: 5.817538}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -45,9 +45,18 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2b0e765a1e0e37144ae23f180fea3d4d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _isSetup: 0
+  _prefabId: -2147483648
+  _componentIndex: -2147483648
+  _shouldBePooled: 0
+  _parent: {fileID: 0}
+  _invertedPathToNearestParent: 
+  _directChildren: []
   _networkRules: {fileID: 0}
   _visitiblityRules: {fileID: 0}
-  trackingTransform: {fileID: 0}
+  trackingTransform: {fileID: 3346230901672975623}
+  dissonanceId_Debug: 
+  isTracking_Debug: 0
 --- !u!114 &1937479500786705311
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -60,6 +69,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d589309a8b0b45f44a0ddd1e2e82017a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _isSetup: 0
+  _prefabId: -2147483648
+  _componentIndex: -2147483648
+  _shouldBePooled: 0
+  _parent: {fileID: 0}
+  _invertedPathToNearestParent: 
+  _directChildren: []
   _networkRules: {fileID: 0}
   _visitiblityRules: {fileID: 0}
-  _guid: f513c2b4afa19f740bbf5c7f561c0722

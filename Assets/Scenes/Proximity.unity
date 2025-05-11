@@ -153,6 +153,8 @@ MonoBehaviour:
   _serverPort: 5000
   _maxConnections: 100
   _address: 127.0.0.1
+  _timeoutInSeconds: 5
+  _pollEventsInUpdate: 0
 --- !u!114 &236746782
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -165,15 +167,18 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: baacc2bfe126d544691d4f39fa3785f9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _stopPlayingOnDisconnect: 0
   _startServerFlags: 9
   _startClientFlags: 7
   _cookieScope: 1
-  _dontDestroyOnLoad: 1
+  _dontDestroyOnLoad: 0
   _transport: {fileID: 236746781}
   _networkPrefabs: {fileID: 11400000, guid: 6df1f043c415f994e85a0c98a5d3610d, type: 2}
   _networkRules: {fileID: 11400000, guid: d8799083b96579a42b8b2d03e4ceae98, type: 2}
   _visibilityRules: {fileID: 11400000, guid: 8f014a5bd8dc68646a2a3c0b18c5bbd8, type: 2}
+  _authenticator: {fileID: 0}
   _tickRate: 20
+  _patchLingeringProcessBug: 0
 --- !u!4 &236746783
 Transform:
   m_ObjectHideFlags: 0
@@ -201,7 +206,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ced7bf28cdbee104e8cdc34ab761b039, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  playerPrefab: {fileID: 1937479500786705311, guid: f513c2b4afa19f740bbf5c7f561c0722, type: 3}
+  playerPrefab: {fileID: 0}
+  _playerPrefab: {fileID: 3038797334321894207, guid: 46b269c513283974eb91b3133589a53c, type: 3}
+  _ignoreNetworkRules: 0
   spawnPoints: []
 --- !u!1 &330585543
 GameObject:
@@ -513,8 +520,8 @@ GameObject:
   - component: {fileID: 2080732139}
   - component: {fileID: 2080732138}
   - component: {fileID: 2080732141}
-  - component: {fileID: 2080732142}
   - component: {fileID: 2080732143}
+  - component: {fileID: 2080732144}
   m_Layer: 0
   m_Name: Dissonance
   m_TagString: Untagged
@@ -552,7 +559,7 @@ MonoBehaviour:
   _isDeafened: 0
   _oneMinusBaseRemoteVoiceVolume: 0
   _playbackPrefab: {fileID: 0}
-  _playbackPrefab2: {fileID: 0}
+  _playbackPrefab2: {fileID: 1000010352696724, guid: 55448c359efce2145ae0d6961e9d476c, type: 3}
   _micName: 
   _playerPriority: 0
   _tokens:
@@ -580,42 +587,6 @@ AudioListener:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2080732137}
   m_Enabled: 1
---- !u!114 &2080732142
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2080732137}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 6a066ddbf125f9546bcadc947418566b, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  _tokens:
-    _tokens: []
-  _channelTypeExpanded: 1
-  _metadataExpanded: 1
-  _activationModeExpanded: 0
-  _tokensExpanded: 0
-  _ampExpanded: 0
-  _activationFaderSettings:
-    _volume: 1
-    _fadeInTicks: 0
-    _fadeOutTicks: 1500000
-  _triggerFaderSettings:
-    _volume: 1
-    _fadeInTicks: 7500000
-    _fadeOutTicks: 11500000
-  _broadcastPosition: 1
-  _channelType: 0
-  _inputName: 
-  _mode: 1
-  _muted: 0
-  _playerId: 
-  _useTrigger: 0
-  _roomName: Global
-  _priority: -2
 --- !u!114 &2080732143
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -625,16 +596,42 @@ MonoBehaviour:
   m_GameObject: {fileID: 2080732137}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 3737438748cf23f448d18cd2c6192e95, type: 3}
+  m_Script: {fileID: 11500000, guid: ced1b68963272494b9b3d3bed1584a33, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   _tokens:
     _tokens: []
+  _range: 20
+  _roomName: Proximity
+  _useTrigger: 0
   _roomExpanded: 1
   _tokensExpanded: 0
   _colliderExpanded: 0
-  _roomName: Global
+--- !u!114 &2080732144
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2080732137}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1a76c0688e4bd80499ffa3b6a2aed3f2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _tokens:
+    _tokens: []
+  _range: 20
+  _roomName: Proximity
   _useTrigger: 0
+  _roomExpanded: 1
+  _metadataExpanded: 0
+  _activationModeExpanded: 0
+  _tokensExpanded: 0
+  _inputName: 
+  _mode: 1
+  _muted: 0
+  _prority: 0
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

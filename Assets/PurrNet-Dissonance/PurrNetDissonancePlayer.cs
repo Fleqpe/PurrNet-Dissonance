@@ -2,6 +2,9 @@ using PurrNet;
 using PurrNet.Logging;
 using UnityEngine;
 using System;
+#if UNITY_EDITOR
+using PurrNet.Utils;
+#endif
 
 namespace Dissonance.Integrations.PurrNet
 {
@@ -10,12 +13,14 @@ namespace Dissonance.Integrations.PurrNet
         [SerializeField] private Transform trackingTransform;
 
 #if UNITY_EDITOR
-        [SerializeField] private string dissonanceId_Debug;
-        [SerializeField] private bool isTracking_Debug;
+        [SerializeField, PurrReadOnly] private string dissonanceId_Debug;
+        [SerializeField, PurrReadOnly] private bool isTracking_Debug;
 #endif
 
         private readonly SyncVar<string> _playerId = new("", ownerAuth: false);
         private Transform _transform;
+        private DissonanceComms _dissonanceComms;
+        public DissonanceComms dissonanceComms => _dissonanceComms ??= FindObjectOfType<DissonanceComms>();
 
         // IDissonancePlayer implementation
         public string PlayerId => _playerId.value;
@@ -44,11 +49,10 @@ namespace Dissonance.Integrations.PurrNet
             }
         }
 
-        // "name" is the player ID in Dissonance, which is set by the DissonanceComms component
-        // This is a workaround to get the player ID from Dissonance, as it doesn't provide a direct way to access it? idk maybe i'm just dumb
+        // "name" is the player ID in Dissonance, which is set by the DissonanceComms component 
         private string GetDissonanceLocalPlayerName()
         {
-            var comms = FindObjectOfType<DissonanceComms>();
+            var comms = dissonanceComms;
             if (comms == null)
                 return owner.Value.id.ToString();
 
@@ -63,7 +67,7 @@ namespace Dissonance.Integrations.PurrNet
             if (!isOwner)
                 return;
 
-            var comms = FindObjectOfType<DissonanceComms>();
+            var comms = _dissonanceComms;
             if (comms == null)
                 return;
 
@@ -111,7 +115,7 @@ namespace Dissonance.Integrations.PurrNet
             if (track && string.IsNullOrEmpty(_playerId.value))
                 return;
 
-            var comms = FindObjectOfType<DissonanceComms>();
+            var comms = _dissonanceComms;
             if (comms == null)
                 return;
 
