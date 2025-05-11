@@ -1,33 +1,28 @@
 using PurrNet;
 using PurrNet.Logging;
-using PurrNet.Utils;
 using UnityEngine;
+using System;
 
 namespace Dissonance.Integrations.PurrNet
 {
     public class PurrNetDissonancePlayer : NetworkIdentity, IDissonancePlayer
     {
-        [Tooltip("If this is not set, the transform of this object will be used.")] [SerializeField]
-        private Transform trackingTransform;
+        [SerializeField] private Transform trackingTransform;
 
 #if UNITY_EDITOR
-        [SerializeField, PurrReadOnly] private string dissonanceId_Debug;
-        [SerializeField, PurrReadOnly] private bool isTracking_Debug;
+        [SerializeField] private string dissonanceId_Debug;
+        [SerializeField] private bool isTracking_Debug;
 #endif
 
-        private readonly SyncVar<string> _playerId = new("", ownerAuth: true);
-
-        public DissonanceComms Comms { get; private set; }
-
+        private readonly SyncVar<string> _playerId = new("", ownerAuth: false);
         private Transform _transform;
-        private PurrNetCommsNetwork _purrComms;
 
-        public string PlayerId => _localPlayerId;
+        // IDissonancePlayer implementation
+        public string PlayerId => _playerId.value;
         public Vector3 Position => _transform.position;
         public Quaternion Rotation => _transform.rotation;
         public NetworkPlayerType Type => isOwner ? NetworkPlayerType.Local : NetworkPlayerType.Remote;
         public bool IsTracking { get; private set; }
-        private string _localPlayerId = "";
 
         private void Awake()
         {
@@ -35,86 +30,120 @@ namespace Dissonance.Integrations.PurrNet
             _playerId.onChanged += OnPlayerIdChanged;
         }
 
-        protected override void OnDestroy()
+        private void Start()
         {
-            base.OnDestroy();
-            _playerId.onChanged -= OnPlayerIdChanged;
+            if (isOwner && NetworkManager.main.isServer)
+            {
+                // We're the host (working for now)
+                SetPlayerIdFromDissonance();
+            }
+            else if (isOwner)
+            {
+                // We're a client (WIP 28/03/2025)
+                ServerRpcSetPlayerId(GetDissonanceLocalPlayerName());
+            }
         }
 
-        private void OnPlayerIdChanged(string obj)
+        // "name" is the player ID in Dissonance, which is set by the DissonanceComms component
+        // This is a workaround to get the player ID from Dissonance, as it doesn't provide a direct way to access it? idk maybe i'm just dumb
+        private string GetDissonanceLocalPlayerName()
         {
-            if (IsTracking)
-                ManageTrackingState(false);
+            var comms = FindObjectOfType<DissonanceComms>();
+            if (comms == null)
+                return owner.Value.id.ToString();
 
-#if UNITY_EDITOR
-            dissonanceId_Debug = obj;
-#endif
+            if (string.IsNullOrEmpty(comms.LocalPlayerName))
+                comms.LocalPlayerName = owner.Value.id.ToString();
 
-            _localPlayerId = obj;
-            ManageTrackingState(true);
+            return comms.LocalPlayerName;
+        }
+
+        private void SetPlayerIdFromDissonance()
+        {
+            if (!isOwner)
+                return;
+
+            var comms = FindObjectOfType<DissonanceComms>();
+            if (comms == null)
+                return;
+
+            if (string.IsNullOrEmpty(comms.LocalPlayerName))
+                comms.LocalPlayerName = owner.Value.id.ToString();
+
+            _playerId.value = comms.LocalPlayerName;
+        }
+
+        [ServerRpc(requireOwnership: true)]
+        private void ServerRpcSetPlayerId(string id)
+        {
+            _playerId.value = id;
+            PurrLogger.Log($"Server set player ID: {id}");
         }
 
         private void OnEnable()
         {
-            ManageTrackingState(true);
+            ManageTracking(true);
         }
 
         private void OnDisable()
         {
-            ManageTrackingState(false);
+            ManageTracking(false);
         }
 
-        protected override void OnOwnerChanged(PlayerID? oldOwner, PlayerID? newOwner, bool asServer)
+        private void OnPlayerIdChanged(string newId)
         {
-            base.OnOwnerChanged(oldOwner, newOwner, asServer);
-
-            if (!isOwner)
-                return;
-
-            if (!_purrComms)
-            {
-                PurrLogger.LogError($"Dissonance player couldn't find PurrNetCommsNetwork instance.");
-                return;
-            }
-
-            if (newOwner.HasValue)
-            {
-                _playerId.value = newOwner.Value.id.ToString();
-                ManageTrackingState(true);
-            }
-            else
-            {
-                _playerId.value = "";
-                ManageTrackingState(false);
-            }
-        }
-
-        private void ManageTrackingState(bool track)
-        {
-            if (IsTracking == track) return;
-            if (!InstanceHandler.TryGetInstance(out _purrComms))
-            {
-                //PurrLogger.LogError($"PurrNetCommsNetwork instance not found.");
-                return;
-            }
-
-            if (track && !_purrComms.IsInitialized)
-            {
-                PurrLogger.LogWarning($"PurrNetDissonancePlayer is not yet initialized, so we can't start tracking");
-                return;
-            }
-
-            DissonanceComms comms = _purrComms.comms;
-            if (track)
-                comms.TrackPlayerPosition(this);
-            else
-                comms.StopTracking(this);
-
-            IsTracking = track;
+            if (IsTracking)
+                ManageTracking(false);
 
 #if UNITY_EDITOR
-            isTracking_Debug = IsTracking;
+            dissonanceId_Debug = newId;
 #endif
+
+            if (!string.IsNullOrEmpty(newId))
+                ManageTracking(true);
+        }
+
+        private void ManageTracking(bool track)
+        {
+            if (IsTracking == track)
+                return;
+
+            if (track && string.IsNullOrEmpty(_playerId.value))
+                return;
+
+            var comms = FindObjectOfType<DissonanceComms>();
+            if (comms == null)
+                return;
+
+            try
+            {
+                if (track)
+                {
+                    comms.TrackPlayerPosition(this);
+                    PurrLogger.Log($"Started tracking player: {_playerId.value}");
+                }
+                else
+                {
+                    comms.StopTracking(this);
+                }
+
+                IsTracking = track;
+
+#if UNITY_EDITOR
+                isTracking_Debug = IsTracking;
+#endif
+            }
+            catch (Exception ex)
+            {
+                PurrLogger.LogError($"Error in positional tracking: {ex.Message}");
+            }
+        }
+
+        protected override void OnDestroy()
+        {
+            ManageTracking(false);
+            _playerId.onChanged -= OnPlayerIdChanged;
+            base.OnDestroy();
         }
     }
 }
