@@ -67,7 +67,7 @@ namespace Dissonance.Integrations.PurrNet
             if (!isOwner)
                 return;
 
-            var comms = _dissonanceComms;
+            var comms = dissonanceComms;
             if (comms == null)
                 return;
 
@@ -115,7 +115,7 @@ namespace Dissonance.Integrations.PurrNet
             if (track && string.IsNullOrEmpty(_playerId.value))
                 return;
 
-            var comms = _dissonanceComms;
+            var comms = dissonanceComms;
             if (comms == null)
                 return;
 
