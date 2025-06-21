@@ -43,7 +43,17 @@ namespace Dissonance.Integrations.PurrNet
                 ServerRpcSetPlayerId(GetDissonanceLocalPlayerName());
             }
         }
-
+        public void SetTrackingTransform(Transform newTransform)
+        {
+            if (newTransform == null)
+            {
+                PurrLogger.LogError("Tracking transform cannot be null.");
+                return;
+            }
+            trackingTransform = newTransform;
+            _transform = newTransform;
+            PurrLogger.Log($"Tracking transform set to: {_transform.name}");
+        }
         // "name" is the player ID in Dissonance, which is set by the DissonanceComms component
         // This is a workaround to get the player ID from Dissonance, as it doesn't provide a direct way to access it? idk maybe i'm just dumb
         private string GetDissonanceLocalPlayerName()
