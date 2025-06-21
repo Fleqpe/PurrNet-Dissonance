@@ -1,6 +1,5 @@
 using Dissonance.Networking;
 using PurrNet;
-using PurrNet.Logging;
 using PurrNet.Transports;
 using UnityEngine;
 
